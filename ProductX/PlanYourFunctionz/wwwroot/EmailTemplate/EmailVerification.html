@@ -1,0 +1,57 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Confirmation - {{SiteName}}</title>
+    <style>
+        .header h1,body{margin:0}
+        .footer,.header,.content{text-align:center}
+        body{font-family:Arial,sans-serif;background-color:#f4f4f4;padding:0;color:#333}
+        .container{width:100%;max-width:600px;margin:0 auto;background-color:#fff;border-radius:8px;padding:20px;box-shadow:0 4px 12px rgba(0,0,0,.1)}
+        .header{padding:20px 0;background-color:#007bff;color:#fff;border-radius:8px 8px 0 0}
+        .header a{ color: #fff; text-decoration: none; }
+        .content{padding:20px}
+        .footer{padding:10px 0;font-size:14px;color:#777}
+        .footer a{color:#007bff;text-decoration:none}
+        .footer a:hover{text-decoration:underline}
+        .footer p{margin:10px 0}
+        .btn{display:inline-block;padding:10px 20px;background-color:#007bff !important;color:#fff !important;border-radius:5px;text-decoration:none;font-weight:bold;margin:20px 0}
+        .btn:hover{background-color:#0056b3}
+        .copy-url{font-size:14px;color:#333;margin-top:10px;padding:10px 5px;background-color:#f8f9fa;border:1px solid #ccc;border-radius:5px}
+        .copy-url span{font-weight:bold}
+        .copy-url a{color:#007bff;text-decoration:none !important;}
+        .copy-url a:hover{text-decoration:underline;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="{{SiteURL}}"><h1>{{SiteName}}</h1></a>
+        </div>
+
+        <div class="content">
+            <p>Dear <strong>{{FullName}}</strong>,</p>
+            <p>Welcome to <strong>{{SiteName}}</strong>, and thank you for joining us!</p>
+
+            <p>To get started, please click the button below:</p>
+
+            <a href="{{ConfirmationURL}}" target="_blank" rel="noopener noreferrer" class="btn">Click to activate your account</a>
+
+            <p>If the button above does not work, you can copy and paste the following URL into your browser:</p>
+
+            <div class="copy-url">
+                <a href="{{ConfirmationURL}}" target="_blank">{{ConfirmationURL}}</a>
+            </div>
+
+            <p>The activation link will expire in {{ExpTime}} days for security reasons. If you need further assistance, feel free to contact us.</p>
+        </div>
+
+        <div class="footer">
+            <p>If you encounter any issues, please contact us at <a href="mailto:{{SupportEmail}}">{{SupportEmail}}</a>.</p>
+            <p><b>{{SiteName}}&nbsp;</b>&copy; 2025. All rights reserved.</p>
+            <p>Disclaimer: You have received this mail because you have registered on {{SiteName}}. This is a system-generated email, please don't reply on this mail.</p>
+        </div>
+    </div>
+</body>
+</html>

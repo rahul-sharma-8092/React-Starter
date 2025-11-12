@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36518.9
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "eClaims", "PlanYourFunctionz\eClaims.csproj", "{9689BDC2-6269-408F-8FDB-14681D25C5B0}"
+EndProject
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "SqlDB", "SqlDB\SqlDB.sqlproj", "{86C2DA3D-F168-433D-BA4D-7533B3085FAA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9689BDC2-6269-408F-8FDB-14681D25C5B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9689BDC2-6269-408F-8FDB-14681D25C5B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9689BDC2-6269-408F-8FDB-14681D25C5B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9689BDC2-6269-408F-8FDB-14681D25C5B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{86C2DA3D-F168-433D-BA4D-7533B3085FAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86C2DA3D-F168-433D-BA4D-7533B3085FAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86C2DA3D-F168-433D-BA4D-7533B3085FAA}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{86C2DA3D-F168-433D-BA4D-7533B3085FAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86C2DA3D-F168-433D-BA4D-7533B3085FAA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{86C2DA3D-F168-433D-BA4D-7533B3085FAA}.Release|Any CPU.Deploy.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {52F72CA7-CD2F-468D-A682-66F42AB9C9E5}
+	EndGlobalSection
+EndGlobal
