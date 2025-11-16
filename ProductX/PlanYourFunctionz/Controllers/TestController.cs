@@ -56,8 +56,12 @@ namespace eClaims.Controllers
         [Authorize(Policy = AppAuthorization.Policies.RequireUser)]
         public IActionResult UserPing() => Ok("User endpoint is accessible.");
 
-        [HttpGet("admin/ping")]
+        [HttpGet("admin/ping/{token}")]
         [Authorize(Policy = AppAuthorization.Policies.RequireAdmin)]
-        public IActionResult AdminPing() => Ok("Admin endpoint is accessible.");
+        public IActionResult AdminPing(int token)
+        {
+            Thread.Sleep(500);
+            return Ok("Admin endpoint is accessible. Token=" + token);
+        }
     }
 }

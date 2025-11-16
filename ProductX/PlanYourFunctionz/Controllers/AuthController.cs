@@ -47,19 +47,19 @@ namespace eClaims.Controllers
             }
 
             //Mobile verification pending
-            if (!user.IsMobileVerified)
-            {
-                MobileOtpDto objOtpDto = new MobileOtpDto();
-                objOtpDto.UserId = user.Id;
-                objOtpDto.RoleId = user.RoleId;
-                objOtpDto.MobileNo = user.MobileNo;
-                objOtpDto.IpAddress = HttpContext.GetClientIpAddress();
+            //if (!user.IsMobileVerified)
+            //{
+            //    MobileOtpDto objOtpDto = new MobileOtpDto();
+            //    objOtpDto.UserId = user.Id;
+            //    objOtpDto.RoleId = user.RoleId;
+            //    objOtpDto.MobileNo = user.MobileNo;
+            //    objOtpDto.IpAddress = HttpContext.GetClientIpAddress();
 
-                string preAuthToken = await _authService.GeneratePreAuthToken(objOtpDto);
-                string maskedMobileNo = Utility.MaskMobileNumber(user.MobileNo);
+            //    string preAuthToken = await _authService.GeneratePreAuthToken(objOtpDto);
+            //    string maskedMobileNo = Utility.MaskMobileNumber(user.MobileNo);
 
-                return this.OkResponse(new { IsMobilePending = true, PreAuthToken = preAuthToken, MobileNo = maskedMobileNo, Initiator = "login" }, Message.OtpSent);
-            }
+            //    return this.OkResponse(new { IsMobilePending = true, PreAuthToken = preAuthToken, MobileNo = maskedMobileNo, Initiator = "login" }, Message.OtpSent);
+            //}
 
             //User verified, proceed with login
             string jwtAccessToken = _jwtService.GenerateAccessToken(user);
@@ -74,7 +74,7 @@ namespace eClaims.Controllers
             
             await _jwtService.SaveRefreshToken(refreshToken);
 
-            //SetAccessCookie(jwtAccessToken, DateTime.UtcNow.AddDays(_jwtSettings.AccessTokenLifetimeMinutes));
+            SetAccessCookie(jwtAccessToken, DateTime.UtcNow.AddDays(_jwtSettings.AccessTokenLifetimeMinutes));
             SetRefreshCookie(refreshToken.TokenHash, refreshToken.ExpiresATUtc);
 
             var responseData = new
@@ -105,18 +105,22 @@ namespace eClaims.Controllers
                 return this.InternalServerError(Message.SomethingWrong);
             }
 
-            MobileOtpDto objOtpDto = new MobileOtpDto();
-            objOtpDto.UserId = userId;
-            objOtpDto.RoleId = AppAuthorization.RoleIDs.User;
-            objOtpDto.MobileNo = registerDto.MobileNumber;
-            objOtpDto.IpAddress = HttpContext.GetClientIpAddress();
-            
-            await _authService.SendEmailVerification(userId, AppAuthorization.RoleIDs.User, objOtpDto.IpAddress);
-            
-            string maskedMobileNo = Utility.MaskMobileNumber(registerDto.MobileNumber);
-            string preAuthToken = await _authService.GeneratePreAuthToken(objOtpDto);
+            string ipAddress = HttpContext.GetClientIpAddress();
 
-            return this.OkResponse(new { PreAuthToken = preAuthToken, MobileNo = maskedMobileNo, Initiator = "register" }, Message.UserRegistered);
+            //MobileOtpDto objOtpDto = new MobileOtpDto();
+            //objOtpDto.UserId = userId;
+            //objOtpDto.RoleId = AppAuthorization.RoleIDs.User;
+            //objOtpDto.MobileNo = registerDto.MobileNumber;
+            //objOtpDto.IpAddress = HttpContext.GetClientIpAddress();
+            
+            await _authService.SendEmailVerification(userId, registerDto.Role, ipAddress);
+            
+            //string maskedMobileNo = Utility.MaskMobileNumber(registerDto.MobileNumber);
+            //string preAuthToken = await _authService.GeneratePreAuthToken(objOtpDto);
+
+            //return this.OkResponse(new { PreAuthToken = preAuthToken, MobileNo = maskedMobileNo, Initiator = "register" }, Message.UserRegistered);
+
+            return this.OkResponse(true, Message.UserRegistered);
         }
 
         [HttpPost("verify-otp")]
@@ -262,29 +266,29 @@ namespace eClaims.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
-            if (Request.Cookies.TryGetValue("plan_refreshToken", out var cookie) && !string.IsNullOrEmpty(cookie))
+            if (Request.Cookies.TryGetValue("hub_refreshToken", out var cookie) && !string.IsNullOrEmpty(cookie))
             {
                 await _jwtService.DeleteRefreshTokenByHash(cookie);
             }
 
             // remove cookie
-            Response.Cookies.Delete("rahul_refreshToken", new CookieOptions
+            Response.Cookies.Delete("hub_refreshToken", new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.None,
                 Path = "/",
-                Domain = ".eClaims.com"
+                //Domain = ".accsshealth.com" //Domain for staging server
             });
 
-            //Response.Cookies.Delete("rahul_accessToken", new CookieOptions
-            //{
-            //    HttpOnly = true,
-            //    Secure = true,
-            //    SameSite = SameSiteMode.None,
-            //    Path = "/",
-            //    Domain = ".eClaims.com"
-            //});
+            Response.Cookies.Delete("hub_accessToken", new CookieOptions
+            {
+                HttpOnly = false,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Path = "/",
+                //Domain = ".accsshealth.com" //Domain for staging server
+            });
 
             return this.OkResponse(true, Message.LogoutSuccess);
         }
@@ -292,7 +296,8 @@ namespace eClaims.Controllers
         [HttpPost("refresh")]
         public async Task<IActionResult> Refresh()
         {
-            if (!Request.Cookies.TryGetValue("plan_refreshToken", out var cookie) || string.IsNullOrEmpty(cookie))
+            Thread.Sleep(5000);
+            if (!Request.Cookies.TryGetValue("hub_refreshToken", out var cookie) || string.IsNullOrEmpty(cookie))
             {
                 return Unauthorized();
             }
@@ -327,7 +332,7 @@ namespace eClaims.Controllers
             var responseData = new
             {
                 accessToken = jwtAccessToken,
-                refreshToken = refreshToken.TokenHash,
+                //refreshToken = refreshToken.TokenHash,
             };
 
             return this.OkResponse(responseData, Message.TokenRefreshed, true);
@@ -337,15 +342,15 @@ namespace eClaims.Controllers
         {
             var cookieOptions = new CookieOptions
             {
-                HttpOnly = true,
+                HttpOnly = false,
                 Secure = true,
                 Expires = expiresAt,
                 SameSite = SameSiteMode.None,
                 Path = "/",
                 IsEssential = true,
-                //Domain = ".rahulsharma.live"
+                //Domain = ".accsshealth.com" //Domain for staging server
             };
-            Response.Cookies.Append("rahul_accessToken", accessToken, cookieOptions);
+            Response.Cookies.Append("hub_accessToken", accessToken, cookieOptions);
         }
 
         private void SetRefreshCookie(string tokenHash, DateTime expiresAt)
@@ -358,9 +363,9 @@ namespace eClaims.Controllers
                 SameSite = SameSiteMode.None,
                 Path = "/",
                 IsEssential = true,
-                //Domain = ".rahulsharma.live"
+                //Domain = ".accsshealth.com" //Domain for staging server
             };
-            Response.Cookies.Append("rahul_refreshToken", tokenHash, cookieOptions);
+            Response.Cookies.Append("hub_refreshToken", tokenHash, cookieOptions);
         }
     }
 }

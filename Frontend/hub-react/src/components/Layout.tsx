@@ -1,9 +1,21 @@
 import type { ReactNode } from "react";
-import { Link, useLocation } from "react-router-dom";
-// import "./Layout.css";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAppDispatch } from "../hooks/hooks";
+import { logout } from "../redux/features/auth/authSlice";
+import { useLoggedInUser } from "../hooks/useLoggedInUser";
 
 const Layout = ({ children }: { children: ReactNode }) => {
     const location = useLocation();
+    const navigate = useNavigate();
+    const dispatch = useAppDispatch();
+    const loggedInUser = useLoggedInUser();
+
+    async function handleLogOut() {
+        const result = await dispatch(logout());
+        console.log("Logout response: ", result);
+
+        navigate("/login");
+    }
 
     return (
         <div className='min-h-screen flex flex-col bg-gray-50'>
@@ -17,6 +29,39 @@ const Layout = ({ children }: { children: ReactNode }) => {
                     </Link>
 
                     <nav className='flex items-center space-x-6'>
+                        {loggedInUser && (
+                            <p>
+                                Welcome!&nbsp;
+                                <strong>{loggedInUser.name}</strong>
+                            </p>
+                        )}
+
+                        {loggedInUser && loggedInUser.role === "user" && (
+                            <Link
+                                to='/dashboard'
+                                className={`text-sm font-medium ${
+                                    location.pathname === "/dashboard" ||
+                                    location.pathname === "/"
+                                        ? "text-blue-600 border-b-2 border-blue-600 pb-1"
+                                        : "text-gray-600 hover:text-blue-600"
+                                }`}>
+                                Dashboard
+                            </Link>
+                        )}
+
+                        {loggedInUser && loggedInUser.role === "admin" && (
+                            <Link
+                                to='/dashboard'
+                                className={`text-sm font-medium ${
+                                    location.pathname === "/dashboard" ||
+                                    location.pathname === "/"
+                                        ? "text-blue-600 border-b-2 border-blue-600 pb-1"
+                                        : "text-gray-600 hover:text-blue-600"
+                                }`}>
+                                Admin_Dashboard
+                            </Link>
+                        )}
+
                         <Link
                             to='/patients'
                             className={`text-sm font-medium ${
@@ -28,18 +73,20 @@ const Layout = ({ children }: { children: ReactNode }) => {
                             Patients
                         </Link>
 
-                        <Link
-                            to='/patients/new'
-                            className='bg-blue-600 text-white text-sm px-4 py-2 rounded-lg shadow-sm hover:bg-blue-700 transition-all'>
-                            + Add Patient
-                        </Link>
+                        {loggedInUser && (
+                            <button
+                                onClick={handleLogOut}
+                                className='bg-blue-600 text-white text-sm px-4 py-2 rounded-lg shadow-sm hover:bg-blue-700 transition-all'>
+                                Logout
+                            </button>
+                        )}
                     </nav>
                 </div>
             </header>
 
             {/* Main Content */}
             <main className='grow'>
-                <div className='container mx-auto px-6 py-8'>{children}</div>
+                <div className='container mx-auto py-2'>{children}</div>
             </main>
 
             {/* Footer */}

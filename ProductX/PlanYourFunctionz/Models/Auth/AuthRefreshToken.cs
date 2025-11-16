@@ -1,4 +1,6 @@
-﻿namespace eClaims.Models.Auth
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace eClaims.Models.Auth
 {
     public class AuthRefreshToken
     {
@@ -11,5 +13,11 @@
         public DateTime? DeletedATUtc { get; set; }
         public string ReplacedByTokenHash { get; set; } = default!;
         public string IpAddress { get; set; } = default!;
+    }
+
+    public class RefreshTokenDto
+    {
+        [Required]
+        public string Token { get; set; }
     }
 }

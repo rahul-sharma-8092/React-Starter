@@ -92,7 +92,7 @@ namespace eClaims.Services
             msg.To = objDto.Email;
             msg.Subject = $"Welcome to {_configKey.SiteName}: Please verify email to activate your account!";
 
-            string confirmationUrl = $"{_configKey.SiteURL}/auth/verify-email/{objDto.Guid}";
+            string confirmationUrl = $"{_configKey.SiteURL}/verify-email/{objDto.Guid}";
 
             string templatePath = Path.Combine(_webHostEnvironment.WebRootPath, "EmailTemplate", "EmailVerification.html");
             string emailBody = System.IO.File.ReadAllText(templatePath);
@@ -103,6 +103,9 @@ namespace eClaims.Services
                                  .Replace("{{ConfirmationURL}}", confirmationUrl)
                                  .Replace("{{SupportEmail}}", _configKey.SupportEmail)
                                  .Replace("{{ExpTime}}", "7");
+
+            ErrorLogToFolder.LogInfo($"Email Verification link for User: {objDto.FullName}", "AuthService");
+            ErrorLogToFolder.LogInfo(emailBody, "AuthService");
 
             msg.Body = emailBody;
             msg.IsHtml = true;

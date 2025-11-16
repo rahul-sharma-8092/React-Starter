@@ -1,13 +1,27 @@
+import { toast } from "react-toastify";
 import { useLoggedInUser } from "../hooks/useLoggedInUser";
+import { pingService } from "../services/ping/pingService";
+import { AxiosError } from "axios";
 
 function Dashboard() {
     const user = useLoggedInUser();
 
+    async function handleTestPing() {
+        try {
+            const { data } = await pingService.getUserPing();
+            toast.success(data);
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                toast.error(error.message);
+            }
+        }
+    }
+
     return (
-        <div className='space-y-6'>
+        <div className='space-y-6 px-7'>
             <div className='flex items-center justify-between'>
                 <h1 className='text-3xl font-semibold text-gray-800'>
-                    🏥 User Dashboard
+                    User Dashboard
                 </h1>
                 <p className='text-gray-500 text-sm'>
                     Welcome back,{" "}
@@ -40,6 +54,12 @@ function Dashboard() {
                         <p className='text-2xl font-bold text-pink-700'>5</p>
                     </div>
                 </div>
+            </div>
+
+            <div className='text-center'>
+                <button onClick={handleTestPing} className=''>
+                    Test User Ping
+                </button>
             </div>
         </div>
     );

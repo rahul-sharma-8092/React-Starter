@@ -113,7 +113,7 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidAudience = jwtSettings.Audience,
         ValidateLifetime = true,
-        ClockSkew = TimeSpan.FromSeconds(30),
+        ClockSkew = TimeSpan.FromSeconds(0),
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)),
         RoleClaimType = ClaimTypes.Role,
@@ -161,6 +161,8 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IEncryptionService, EncryptionService>();
 builder.Services.AddScoped<IUserService, UserService>();
+
+ErrorLogToFolder.Init(builder.Configuration);
 
 var app = builder.Build();
 

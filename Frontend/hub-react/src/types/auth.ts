@@ -14,33 +14,22 @@ export interface JwtTokenPayload {
     exp: number;
 }
 
-export interface Tokens {
-    accessToken: string;
-    refreshToken: string;
-}
-
 export interface AuthState {
     user: User | null;
     accessToken: string | null;
-    refreshToken: string | null;
     loading: boolean;
     error: string | null;
 }
 
 export interface LoginRequest {
-    email: string;
+    userName: string;
     password: string;
 }
 
 export interface LoginResponse {
     data: {
         accessToken: string;
-        refreshToken: string;
     };
-}
-
-export interface RefreshResponse {
-    data: { accessToken: string };
 }
 
 export interface UserRegisterDto {

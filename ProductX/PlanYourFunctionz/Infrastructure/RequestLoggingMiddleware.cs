@@ -1,4 +1,5 @@
-﻿using Serilog;
+﻿using eClaims.Common;
+using Serilog;
 using Serilog.Context;
 using System.Diagnostics;
 
@@ -24,6 +25,11 @@ namespace eClaims.Infrastructure
                 correlationId = headerId!;
             }
 
+            if (!string.IsNullOrEmpty(correlationId))
+            {
+                ErrorLogToFolder.SetCorrelationId(correlationId);
+            }
+
             // Push into Serilog LogContext
             using (LogContext.PushProperty("CorrelationId", correlationId))
             {
@@ -32,8 +38,7 @@ namespace eClaims.Infrastructure
                 try
                 {
                     // Log HTTP Request
-                    logger.ForContext("LogType", "HttpRequest")
-                          .Information("HTTP {Method} Request {Path}", context.Request.Method, context.Request.Path);
+                    logger.ForContext("LogType", "HttpRequest").Information("HTTP {Method} Request {Path}", context.Request.Method, context.Request.Path);
 
                     try
                     {
@@ -56,6 +61,11 @@ namespace eClaims.Infrastructure
                     stopwatch.Stop();
                     logger.ForContext("LogType", "HttpRequest")
                           .Information("HTTP {Method} Response {StatusCode} {Path} (took {Elapsed} ms)", context.Request.Method, context.Response.StatusCode, context.Request.Path, stopwatch.ElapsedMilliseconds);
+
+                    if (context.Response.StatusCode == 401)
+                    {
+                        logger.ForContext("LogType", "Exception").Information("HTTP {Method} Request {Path}", context.Request.Method, context.Request.Path);
+                    }
                 }
             }
         }

@@ -12,7 +12,7 @@ export const registerSchema = z
             .min(2, "Name must be at least 2 characters")
             .max(50)
             .regex(NAME_REGEX, "Invalid name format"),
-        role: z.number(),
+        role: z.number("Role is required"),
         email: z.string().email("Invalid email address"),
         mobileNumber: z
             .string()

@@ -3,16 +3,26 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAppDispatch, useAppSelector } from "../hooks/hooks";
 import { login } from "../redux/features/auth/authSlice";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { loginSchema } from "../validations/auth/loginSchema";
 import type { RootState } from "../redux/store";
+import { useLoggedInUser } from "../hooks/useLoggedInUser";
+import { useEffect } from "react";
 
 type FormValues = z.infer<typeof loginSchema>;
 
 export default function Login() {
-    const dispatch = useAppDispatch();
-    const { loading, error } = useAppSelector((s: RootState) => s.auth);
     const navigate = useNavigate();
+    const dispatch = useAppDispatch();
+    const loggedInUser = useLoggedInUser();
+    const { loading, error } = useAppSelector((s: RootState) => s.auth);
+
+    useEffect(() => {
+        console.log("Login Page: loggedInUser: ", loggedInUser);
+        if (!!loggedInUser && !!loggedInUser.email) {
+            navigate("/dashboard", { replace: true });
+        }
+    }, [loggedInUser]);
 
     const {
         register,
@@ -21,14 +31,18 @@ export default function Login() {
     } = useForm<FormValues>({ resolver: zodResolver(loginSchema) });
 
     const onSubmit = async (data: FormValues) => {
-        const result = await dispatch(login(data));
-        if (login.fulfilled.match(result)) {
-            navigate("/dashboard", { replace: true });
+        try {
+            const result = await dispatch(login(data));
+            if (login.fulfilled.match(result)) {
+                navigate("/dashboard", { replace: true });
+            }
+        } catch (error) {
+            console.log(error);
         }
     };
 
     return (
-        <div className='min-h-screen flex items-center justify-center bg-gray-100 px-4'>
+        <div className='min-h-full flex items-center justify-center bg-gray-50 px-4'>
             <div className='w-full max-w-md bg-white p-8 rounded-2xl shadow-md'>
                 <h1 className='text-2xl font-semibold text-center mb-6 text-gray-800'>
                     Sign In
@@ -102,11 +116,11 @@ export default function Login() {
 
                 <p className='text-center text-sm text-gray-500 mt-6'>
                     Don&apos;t have an account?{" "}
-                    <a
-                        href='#'
+                    <Link
+                        to='/register'
                         className='text-indigo-600 hover:text-indigo-500 font-medium'>
                         Register
-                    </a>
+                    </Link>
                 </p>
             </div>
         </div>

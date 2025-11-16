@@ -1,4 +1,3 @@
-// import { logout, refreshToken } from "@/redux/feature/auth/authSlice";
 import { store } from "../redux/store";
 import axios, {
     AxiosError,
@@ -6,25 +5,34 @@ import axios, {
     type AxiosRequestConfig,
     type InternalAxiosRequestConfig,
 } from "axios";
-import { refreshToken, logout } from "../redux/features/auth/authSlice";
+import { logout, setAccessToken } from "../redux/features/auth/authSlice";
+import { setLoading } from "../redux/features/auth/loadingSlice";
+import { API_ROUTES, EXCLUDED_401_URLS } from "./apiRoutes";
 
 const API_BASE =
     (import.meta.env.VITE_API_BASE as string) ||
     "https://localhost:44358/api/v1";
 
+// Use for api call
 const api: AxiosInstance = axios.create({
     baseURL: API_BASE,
-    withCredentials: true, // important for cookie-based refresh
-    headers: {
-        "Content-Type": "application/json",
-    },
+    withCredentials: true,
+    headers: { "Content-Type": "application/json" },
+});
+
+// Use only for refresh token
+const refreshClient = axios.create({
+    baseURL: API_BASE,
+    withCredentials: true,
+    headers: { "Content-Type": "application/json" },
 });
 
 let isRefreshing = false;
-let failedQueue: Array<{
+type QueuedRequest = {
     resolve: (token: string) => void;
-    reject: (err: AxiosError) => void;
-}> = [];
+    reject: (err: any) => void;
+};
+let failedQueue: QueuedRequest[] = [];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const processQueue = (error: any, token: string | null = null) => {
@@ -35,31 +43,54 @@ const processQueue = (error: any, token: string | null = null) => {
     failedQueue = [];
 };
 
-api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-    const state = store.getState();
-    const accessToken = state.auth.accessToken;
-    if (accessToken && config.headers) {
-        config.headers.Authorization = `Bearer ${accessToken}`;
+api.interceptors.request.use(
+    (config: InternalAxiosRequestConfig) => {
+        const state = store.getState();
+        const token = state.auth.accessToken;
+        if (token && config.headers) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+
+        store.dispatch(setLoading(true));
+        return config;
+    },
+    (error) => {
+        store.dispatch(setLoading(false));
+        return Promise.reject(error);
     }
-    return config;
-});
+);
 
 api.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        store.dispatch(setLoading(false));
+        return response;
+    },
     async (error: AxiosError) => {
+        store.dispatch(setLoading(false));
         const originalRequest = error.config as AxiosRequestConfig & {
             _retry?: boolean;
         };
 
-        if (error.response?.status === 401 && !originalRequest?._retry) {
+        if (!error.response) return Promise.reject(error);
+
+        const reqApiUrl = originalRequest.url?.toLowerCase() || "";
+        const isUrlExcluded = EXCLUDED_401_URLS.has(reqApiUrl);
+
+        if (
+            error.response.status === 401 &&
+            !originalRequest._retry &&
+            !isUrlExcluded
+        ) {
             originalRequest._retry = true;
 
             if (isRefreshing) {
+                // Another refresh in progress so, queue this request
                 return new Promise((resolve, reject) => {
                     failedQueue.push({
                         resolve: (token: string) => {
-                            if (originalRequest.headers)
+                            if (originalRequest.headers) {
                                 originalRequest.headers.Authorization = `Bearer ${token}`;
+                            }
                             resolve(api(originalRequest));
                         },
                         reject,
@@ -70,17 +101,34 @@ api.interceptors.response.use(
             isRefreshing = true;
 
             try {
-                const res = await api.post("/auth/refresh");
-                const data = res.data as { accessToken: string };
-                store.dispatch(refreshToken());
-                processQueue(null, data.accessToken);
-                if (originalRequest.headers)
-                    originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
+                const { data } = await refreshClient.post(
+                    API_ROUTES.AUTH.REFRESH
+                );
+                console.log("Refresh response: ", data);
+                const newAccessToken =
+                    (data.data && data.data.accessToken) || null;
+
+                if (!newAccessToken) {
+                    throw new Error("No access token returned during refresh");
+                }
+
+                store.dispatch(setAccessToken(newAccessToken));
+
+                api.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
+
+                // Retry pending requests
+                processQueue(null, newAccessToken);
+
+                // Update original request header and retry it
+                if (originalRequest.headers) {
+                    originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+                }
                 return api(originalRequest);
-            } catch (err: unknown) {
-                processQueue(err, null);
+            } catch (refreshError) {
+                console.log("Refresh error: ", refreshError);
                 store.dispatch(logout());
-                return Promise.reject(err);
+                processQueue(refreshError, null);
+                return Promise.reject(refreshError);
             } finally {
                 isRefreshing = false;
             }

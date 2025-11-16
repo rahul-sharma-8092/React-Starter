@@ -38,3 +38,34 @@ button:not(:disabled),
 a {
     @apply transition-all duration-300 ease-in-out;
 }
+
+button {
+    @apply font-bold px-3 py-2 border border-gray-950 rounded-md cursor-pointer hover:bg-black hover:text-white;
+}
+
+/* Loader Animation Start */
+@keyframes spinSlow {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+@keyframes spinReverse {
+    0% {
+        transform: rotate(360deg);
+    }
+    100% {
+        transform: rotate(0deg);
+    }
+}
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+/* Loader Animation End */

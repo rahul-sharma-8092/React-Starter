@@ -1,7 +1,6 @@
-import React from "react";
-import { useSelector } from "react-redux";
-import type { RootState } from "../redux/store";
 import { Navigate } from "react-router-dom";
+import Unauthorized from "../pages/Unauthorized";
+import { useLoggedInUser } from "../hooks/useLoggedInUser";
 
 interface propRequireAuth {
     children: React.ReactNode;
@@ -9,19 +8,17 @@ interface propRequireAuth {
 }
 
 function RequireAuth({ children, allowedRoles }: propRequireAuth) {
-    const loggedInUser = useSelector((state: RootState) => state.auth);
+    const loggedInUser = useLoggedInUser();
 
-    if (!loggedInUser || !loggedInUser.user) {
+    if (!loggedInUser) {
         return <Navigate to='/login' replace />;
     }
 
     if (
         allowedRoles &&
-        !allowedRoles.includes(
-            loggedInUser.user?.role?.toLocaleLowerCase() ?? ""
-        )
+        !allowedRoles.includes(loggedInUser.role?.toLocaleLowerCase() ?? "")
     ) {
-        return <Navigate to='/unauthorized' replace />;
+        return <Unauthorized />;
     }
 
     return <>{children}</>;
