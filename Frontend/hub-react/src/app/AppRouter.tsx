@@ -11,6 +11,10 @@ import DashBoardRedirection from "../components/DashBoardRedirection";
 import { useAppDispatch } from "../hooks/hooks";
 import { loadPersistedAuth } from "../redux/features/auth/authSlice";
 import { useEffect } from "react";
+import DatePickerTestPage from "../pages/DatePickerTestPage";
+import SingleSelectTestPage from "../pages/SingleSelectTestPage";
+import MultiSelectTestPage from "../pages/MultiSelectTestPage";
+import TodoGridPage from "../pages/TodoGridPage";
 
 export default function AppRouter() {
     const isLoading = useAppSelector((state) => state.loading.global);
@@ -24,6 +28,10 @@ export default function AppRouter() {
         <Layout>
             {isLoading && <LoadingOverlay />}
             <Routes>
+                <Route path='/datepicker' element={<DatePickerTestPage />} />
+                <Route path='/select-demo' element={<SingleSelectTestPage />} />
+                <Route path='/multi-select-demo' element={<MultiSelectTestPage />} />
+                <Route path='/todos' element={<TodoGridPage />} />
                 <Route path='/login' element={<Login />} />
                 <Route path='/register' element={<Register />} />
                 <Route path='/verify-email/:id' element={<VerifyEmail />} />

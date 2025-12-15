@@ -72,6 +72,16 @@ const Layout = ({ children }: { children: ReactNode }) => {
                             }`}>
                             Patients
                         </Link>
+                        
+                        <Link
+                            to='/todos'
+                            className={`text-sm font-medium ${
+                                location.pathname === "/todos"
+                                    ? "text-blue-600 border-b-2 border-blue-600 pb-1"
+                                    : "text-gray-600 hover:text-blue-600"
+                            }`}>
+                            Todos
+                        </Link>
 
                         {loggedInUser && (
                             <button
